@@ -19,6 +19,8 @@ services:
     ports: ["8000:8000"]
     depends_on: [ollama, qdrant]
     restart: unless-stopped
+    volumes:
+      - ./data:/app/data:ro 
 
   ui:
     build: ./ui
