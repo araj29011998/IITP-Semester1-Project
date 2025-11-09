@@ -38,7 +38,7 @@ def upsert_chunks(chunks):
     points = []
     for ((text, meta), vec) in zip(chunks, vecs):
         stable = f"{meta.get('file','?')}|{meta.get('page','?')}|{text}"
-        pid = hashlib.sha1(stable.encode()).hexdigest()  # stable id
+        pid = str(uuid.uuid5(uuid.NAMESPACE_URL, stable))  # deterministic & valid
         points.append(PointStruct(id=pid, vector=vec, payload={"text": text, **meta}))
     _client.upsert(collection_name=COLLECTION, points=points)
     

@@ -1,4 +1,4 @@
-import os, httpx
+import os, httpx, time
 from vectordb import search_chunks
 from tools import TOOL_REGISTRY  # <-- tools
 
@@ -10,12 +10,23 @@ SYSTEM = (
 "Always cite as [file:page]. Never fabricate."
 )
 
+LLM_TIMEOUT = int(os.getenv("LLM_TIMEOUT", "240"))  # seconds
+
 def ollama_chat(messages, model=CHAT_MODEL):
     payload = {"model": model, "messages": messages, "stream": False}
-    with httpx.Client(timeout=120) as cx:
-        r = cx.post(f"{LLM_BASE}/v1/chat/completions", json=payload)
-        r.raise_for_status()
-        return r.json()["choices"][0]["message"]["content"]
+
+    last_err = None
+    for attempt in range(3):  # simple retry
+        try:
+            with httpx.Client(timeout=LLM_TIMEOUT) as cx:
+                r = cx.post(f"{LLM_BASE}/v1/chat/completions", json=payload)
+                r.raise_for_status()
+                return r.json()["choices"][0]["message"]["content"]
+        except httpx.HTTPError as e:
+            last_err = e
+            time.sleep(1 + attempt)  # backoff: 1s, 2s
+    raise last_err
+
 
 def format_ctx(results):
     blocks = []
