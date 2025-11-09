@@ -1,7 +1,11 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 import os, httpx
 from typing import List, Tuple, Dict, Any
 from qdrant_client import QdrantClient
 from qdrant_client.models import VectorParams, Distance, PointStruct
+import uuid
 
 QDRANT_URL = os.getenv("QDRANT_URL","http://qdrant:6333")
 COLLECTION = os.getenv("COLLECTION","tnf_chunks")
@@ -27,12 +31,18 @@ def embed(texts: List[str]) -> List[List[float]]:
             out.append(r.json()["embedding"])
         return out
 
-def upsert_chunks(chunks: List[Tuple[str, Dict[str, Any]]]):
+def upsert_chunks(chunks):
     ensure_collection()
     vecs = embed([c[0] for c in chunks])
     points = []
     for ((text, meta), vec) in zip(chunks, vecs):
-        points.append(PointStruct(id=None, vector=vec, payload={"text": text, **meta}))
+        points.append(
+            PointStruct(
+                id=uuid.uuid4().hex,            # give every point a unique id
+                vector=vec,
+                payload={"text": text, **meta}
+            )
+        )
     _client.upsert(collection_name=COLLECTION, points=points)
 
 def search_chunks(query: str, k: int=6) -> List[Tuple[str, Dict[str, Any]]]:

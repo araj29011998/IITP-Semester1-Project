@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 import re, subprocess
 from pathlib import Path
 import sys
