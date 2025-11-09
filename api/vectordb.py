@@ -1,3 +1,4 @@
+import hashlib
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -36,15 +37,11 @@ def upsert_chunks(chunks):
     vecs = embed([c[0] for c in chunks])
     points = []
     for ((text, meta), vec) in zip(chunks, vecs):
-        points.append(
-            PointStruct(
-                id=uuid.uuid4().hex,            # give every point a unique id
-                vector=vec,
-                payload={"text": text, **meta}
-            )
-        )
+        stable = f"{meta.get('file','?')}|{meta.get('page','?')}|{text}"
+        pid = hashlib.sha1(stable.encode()).hexdigest()  # stable id
+        points.append(PointStruct(id=pid, vector=vec, payload={"text": text, **meta}))
     _client.upsert(collection_name=COLLECTION, points=points)
-
+    
 def search_chunks(query: str, k: int=6) -> List[Tuple[str, Dict[str, Any]]]:
     ensure_collection()
     qv = embed([query])[0]
