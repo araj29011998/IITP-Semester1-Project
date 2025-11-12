@@ -3,7 +3,7 @@ import base64
 from pathlib import Path
 
 # --- Page config (do this once) ---
-st.set_page_config(page_title="IIT Patna RAG Assistant", page_icon="🎓", layout="wide")
+st.set_page_config(page_title="IntelliDoc — IIT Patna", page_icon="🎓", layout="wide")
 
 def center_image_local(filename: str, width: int = 200):
     """Load an image that lives in the same folder as this file and center it."""
@@ -28,11 +28,8 @@ center_image_local("images.png", width=200)
 st.markdown(
     """
     <h1 style='text-align:center; color:#004aad; margin:10px 0 4px 0;'>
-        <b>🔍 TNF Knowledge Assistant — IIT Patna</b>
+        <b>IntelliDoc — IIT Patna</b>
     </h1>
-    <p style='text-align:center; font-size:15px; color:gray; margin-top:0;'>
-        Ask about TNF Docs • SOPs • KPIs — all processed locally via RAG
-    </p>
     <hr style='border:1px solid #0b61e1; margin:12px 0 24px 0;'>
     """,
     unsafe_allow_html=True,
